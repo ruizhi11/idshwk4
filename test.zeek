@@ -19,12 +19,9 @@ event zeek_init()
 						{
 							add a[key$host];
 							all[key$host] = r$sum;
-							uri[key$host] = set();
 						}
 						else
 							all[key$host] = all[key$host] + r$sum;
-						if (!(key$str in uri[key$host]))
-							add uri[key$host][key$str];
                         }]);
     
     SumStats::create([$name="404 response",
@@ -37,9 +34,12 @@ event zeek_init()
 						{
 							add b[key$host];
 							err[key$host] = r$sum;
+							uri[key$host] = set();
 						}
 						else
 							err[key$host] = err[key$host] + r$sum;
+						if (!(key$str in uri[key$host]))
+							add uri[key$host][key$str];
                         }]);
     }
 
@@ -54,9 +54,10 @@ event zeek_done()
 	{
 	for (i in a)
 	{
-		if (err[i] > 2)
-			if (err[i] / all[i] > 0.2)
-				if (|uri[i]|/err[i] > 0.5)
-					print fmt("%s is a scanner with %.0f scan attemps on %d urls", i, err[i], |uri[i]|);
+		if (i in b)
+			if (err[i] > 2)
+				if (err[i] / all[i] > 0.2)
+					if (|uri[i]|/err[i] > 0.5)
+						print fmt("%s is a scanner with %.0f scan attemps on %d urls", i, err[i], |uri[i]|);
 	}
 	}
